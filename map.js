@@ -6,12 +6,7 @@ function load(path) {
     }).responseJSON
 }
 
-function highlightFeature(e) {
-    var highlightLayer = e.target;
-    highlightLayer.openPopup();
-}
-
-function popup(feature, layer, content) {
+function popup(feature, layer, content, onposition = false) {
     layer.on({
         mouseout: function (e) {
             if (typeof layer.closePopup == 'function') {
@@ -22,9 +17,46 @@ function popup(feature, layer, content) {
                 });
             }
         },
-        mouseover: highlightFeature,
+        mouseover: function (e) {
+            if (onposition) {
+                e.target.openPopup(e.latlng)
+            } else {
+                e.target.openPopup();
+            }
+        },
     });
     layer.bindPopup(content, { maxHeight: 400 });
+}
+
+function habitat_layer(path, fillcolor) {
+    return L.geoJSON(load(path), {
+        interactive: true,
+        style: {
+            opacity: 1,
+            color: 'rgba(35,35,35,1.0)',
+            weight: 1.0,
+            fill: true,
+            fillOpacity: 1,
+            fillColor: fillcolor,
+            interactive: true,
+        },
+        onEachFeature: (feature, layer) => popup(feature, layer,
+            '<table>\
+                <tr>\
+                    <td colspan="2"><strong>Nome</strong><br />' + (feature.properties['Name'] !== null ? feature.properties['Name'].toLocaleString() : '') + '</td>\
+                </tr>\
+                <tr>\
+                    <th scope="row">Descrizione</th>\
+                    <td>' + (feature.properties['Descrizion'] !== null ? feature.properties['Descrizion'].toLocaleString() : '') + '</td>\
+                </tr>\
+                <tr>\
+                    <th scope="row">Immagine</th>\
+                    <td>' + (feature.properties['Immagine'] !== null ? '<img src="images/' + String(feature.properties['Immagine']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                </tr>\
+            </table>',
+            true
+        )
+    })
 }
 
 function create_map() {
@@ -103,20 +135,71 @@ function create_map() {
         },
         onEachFeature: (feature, layer) => popup(feature, layer,
             '<table>\
-                    <tr>\
-                        <th scope="row">Vento m/s</th>\
-                        <td>' + (feature.properties['Vento m/s'] !== null ? feature.properties['Vento m/s'].toLocaleString() : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <th scope="row">Onde</th>\
-                        <td>' + (feature.properties['Onde'] !== null ? feature.properties['Onde'].toLocaleString() : '') + '</td>\
-                    </tr>\
-                </table>'
+                <tr>\
+                    <th scope="row">Vento m/s</th>\
+                    <td>' + (feature.properties['Vento m/s'] !== null ? feature.properties['Vento m/s'].toLocaleString() : '') + '</td>\
+                </tr>\
+                <tr>\
+                    <th scope="row">Onde</th>\
+                    <td>' + (feature.properties['Onde'] !== null ? feature.properties['Onde'].toLocaleString() : '') + '</td>\
+                </tr>\
+            </table>'
         )
     });
 
-    var base_scenario = L.layerGroup([ventoeonde_base_layer]).addTo(map);
-    layerControl.addBaseLayer(base_scenario, "Base")
+    var alghefotofile_base_layer = habitat_layer(
+        "./data/habitat/Alghe_fotofile.geojson",
+        'rgba(34,100,34,1.0)'
+    );
+
+    var alghesciafile_base_layer = habitat_layer(
+        "./data/habitat/Alghe_sciafile.geojson",
+        'rgba(50,180,80,1.0)'
+    );
+
+    var caulerpa_base_layer = habitat_layer(
+        "./data/habitat/Caulerpa.geojson",
+        'rgba(28,192,42,1.0)'
+    );
+
+    var coralligeno_base_layer = habitat_layer(
+        "./data/habitat/Coralligeno.geojson",
+        'rgba(231,133,72,1.0)'
+    );
+
+    var cymodocea_base_layer = habitat_layer(
+        "./data/habitat/Cymodocea_nodosa.geojson",
+        'rgba(125,153,216,1.0)'
+    );
+
+    var posidonia_base_layer = habitat_layer(
+        "./data/habitat/Posidonia_oceanica.geojson",
+        'rgba(114,152,239,1.0)'
+    );
+
+    var esposizione_attuale_layer = L.geoJSON(load("./data/Esposizione_attuale_2000.geojson"), {
+        interactive: true,
+        pointToLayer: (feature, latlng) => {
+            return L.circleMarker(latlng, {
+                radius: 1.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(248,93,26,1.0)',
+                interactive: true,
+            })
+        }
+    });
+
+    console.log(esposizione_attuale_layer);
+
+    var base_scenario = L.layerGroup([
+        ventoeonde_base_layer, alghefotofile_base_layer, alghesciafile_base_layer, caulerpa_base_layer,
+        coralligeno_base_layer, cymodocea_base_layer, posidonia_base_layer, esposizione_attuale_layer
+    ]).addTo(map);
+    layerControl.addBaseLayer(base_scenario, "Base");
 
 
 }
