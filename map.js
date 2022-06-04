@@ -71,7 +71,8 @@ function create_map() {
     map.createPane('lineadicosta');
     map.getPane('lineadicosta').style.zIndex = 450;
 
-    map.createPane('base_overlay').style.zIndex = 455;
+    map.createPane('base_overlay');
+    map.getPane('base_overlay').style.zIndex = 455;
 
     /*var wmsLayer = L.tileLayer.wms('https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/mapserv?', {
         layers: 'GEBCO_LATEST_SUB_ICE_TOPO'
