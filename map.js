@@ -68,8 +68,10 @@ function create_map() {
 
     // Create fixed background
 
-    map.createPane('background');
-    map.getPane('background').style.zIndex = 450;
+    map.createPane('lineadicosta');
+    map.getPane('lineadicosta').style.zIndex = 450;
+
+    map.createPane('base_overlay').style.zIndex = 455;
 
     /*var wmsLayer = L.tileLayer.wms('https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/mapserv?', {
         layers: 'GEBCO_LATEST_SUB_ICE_TOPO'
@@ -94,7 +96,7 @@ function create_map() {
             fillColor: 'rgba(211,205,205,1.0)',
             interactive: false
         },
-        pane: 'background'
+        pane: 'lineadicosta'
     });
 
     var piattaformacontinentale_layer = L.geoJSON(load("./data/PiattaformaContinentale.geojson"), {
@@ -105,7 +107,7 @@ function create_map() {
             fill: false,
             interactive: false
         },
-        pane: 'background'
+        pane: 'base_overlay'
     });
 
     var areasimulazione_layer = L.geoJSON(load("./data/Areasimulazione.geojson"), {
@@ -116,11 +118,11 @@ function create_map() {
             fill: false,
             interactive: false
         },
-        pane: 'background'
+        pane: 'base_overlay'
     });
 
     L.layerGroup(
-        [esri_layer, lineadicosta_layer, piattaformacontinentale_layer, areasimulazione_layer],
+        [esri_layer, piattaformacontinentale_layer, areasimulazione_layer],
         { interactive: false }
     ).addTo(map);
 
@@ -249,7 +251,7 @@ function create_map() {
     });
 
     var base_scenario = L.layerGroup([
-        ventoeonde_base_layer, alghefotofile_base_layer, alghesciafile_base_layer, caulerpa_base_layer,
+        lineadicosta_layer, ventoeonde_base_layer, alghefotofile_base_layer, alghesciafile_base_layer, caulerpa_base_layer,
         coralligeno_base_layer, cymodocea_base_layer, posidonia_base_layer, esposizione_attuale_layer
     ]).addTo(map) // default layer group
 
