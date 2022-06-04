@@ -31,6 +31,7 @@ function popup(feature, layer, content, onposition = false) {
 function habitat_layer(path, fillcolor) {
     return L.geoJSON(load(path), {
         interactive: true,
+        pane: 'scenarios',
         style: {
             opacity: 1,
             color: 'rgba(35,35,35,1.0)',
@@ -43,11 +44,11 @@ function habitat_layer(path, fillcolor) {
         onEachFeature: (feature, layer) => popup(feature, layer,
             '<table>\
                 <tr>\
-                    <td colspan="2"><strong>Nome</strong><br />' + (feature.properties['Name'] !== null ? feature.properties['Name'].toLocaleString() : '') + '</td>\
+                    <td colspan="2"><strong>Nome</strong><br />' + (feature.properties['Name'] !== null ? feature.properties['Name'] : '') + '</td>\
                 </tr>\
                 <tr>\
                     <th scope="row">Descrizione</th>\
-                    <td>' + (feature.properties['Descrizion'] !== null ? feature.properties['Descrizion'].toLocaleString() : '') + '</td>\
+                    <td>' + (feature.properties['Descrizion'] !== null ? feature.properties['Descrizion'] : '') + '</td>\
                 </tr>\
                 <tr>\
                     <th scope="row">Immagine</th>\
@@ -61,12 +62,14 @@ function habitat_layer(path, fillcolor) {
 
 function create_map() {
 
-    // Create MAP object
+    // Create map object
 
     var map = L.map('map').setView([44.420, 8.800], 9).setMaxBounds([[45, 7], [42, 11]]).setMinZoom(8);
-    var layerControl = L.control.layers({}, {}).addTo(map);
 
     // Create fixed background
+
+    map.createPane('background');
+    map.getPane('background').style.zIndex = 450;
 
     /*var wmsLayer = L.tileLayer.wms('https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/mapserv?', {
         layers: 'GEBCO_LATEST_SUB_ICE_TOPO'
@@ -90,7 +93,8 @@ function create_map() {
             fillOpacity: 0.3,
             fillColor: 'rgba(211,205,205,1.0)',
             interactive: false
-        }
+        },
+        pane: 'background'
     });
 
     var piattaformacontinentale_layer = L.geoJSON(load("./data/PiattaformaContinentale.geojson"), {
@@ -100,7 +104,8 @@ function create_map() {
             weight: 2.0,
             fill: false,
             interactive: false
-        }
+        },
+        pane: 'background'
     });
 
     var areasimulazione_layer = L.geoJSON(load("./data/Areasimulazione.geojson"), {
@@ -110,7 +115,8 @@ function create_map() {
             weight: 2.0,
             fill: false,
             interactive: false
-        }
+        },
+        pane: 'background'
     });
 
     L.layerGroup(
@@ -120,7 +126,12 @@ function create_map() {
 
     // Create sceario base
 
+    map.createPane('scenarios');
+    map.getPane('scenarios').style.zIndex = 460;
+
     var ventoeonde_base_layer = L.geoJSON(load("./data/ventoeonde/Base.geojson"), {
+        interactive: true,
+        pane: 'scenarios',
         pointToLayer: (feature, latlng) => {
             return L.circleMarker(latlng, {
                 radius: 8.0,
@@ -131,6 +142,7 @@ function create_map() {
                 fillOpacity: 1,
                 fillColor: 'rgba(248,93,26,1.0)',
                 interactive: true,
+                pane: 'scenarios',
             });
         },
         onEachFeature: (feature, layer) => popup(feature, layer,
@@ -179,27 +191,76 @@ function create_map() {
 
     var esposizione_attuale_layer = L.geoJSON(load("./data/Esposizione_attuale_2000.geojson"), {
         interactive: true,
+        pane: 'scenarios',
         pointToLayer: (feature, latlng) => {
+            var fillcolor = (feature) => {
+                switch (feature.properties['Esposizione']) {
+                    case "MOLTO BASSA": return 'rgba(250,0,0,1.0)';
+                    case "BASSA": return 'rgba(0,250,0,1.0)';
+                    case "MEDIA": return 'rgba(0,0,250,1.0)';
+                    case "ALTA": return 'rgba(250,250,0,1.0)';
+                    case "MOLTO ALTA": return 'rgba(0,250,250,1.0)';
+                }
+            }
             return L.circleMarker(latlng, {
-                radius: 1.0,
+                radius: 6.5,
                 opacity: 1,
                 color: 'rgba(35,35,35,1.0)',
                 weight: 1,
                 fill: true,
                 fillOpacity: 1,
-                fillColor: 'rgba(248,93,26,1.0)',
+                fillColor: fillcolor(feature),
                 interactive: true,
+                pane: 'scenarios',
             })
-        }
+        },
+        onEachFeature: (feature, layer) => popup(feature, layer,
+            '<table>\
+                <tr>\
+                    <td colspan="2">' + (feature.properties['fid'] !== null ? feature.properties['fid'] : '') + '</td>\
+                </tr>\
+                <tr>\
+                    <th scope="row">Vento</th>\
+                    <td>' + (feature.properties['Vento'] !== null ? feature.properties['Vento']
+                : '') + '</td>\
+                </tr>\
+                <tr>\
+                    <th scope="row">Onde</th>\
+                    <td>' + (feature.properties['Onde'] !== null ? feature.properties['Onde'] : '') + '</td>\
+                </tr>\
+                <tr>\
+                    <th scope="row">Mareggiata</th>\
+                    <td>' + (feature.properties['Mareggiata'] !== null ? feature.properties['Mareggiata'] : '') + '</td>\
+                </tr>\
+                <tr>\
+                    <th scope="row">Elevazione</th>\
+                    <td>' + (feature.properties['Elevazione'] !== null ? feature.properties['Elevazione'] : '') + '</td>\
+                </tr>\
+                <tr>\
+                    <th scope="row">Habitat</th>\
+                    <td>' + (feature.properties['Habitat'] !== null ? feature.properties['Habitat'] : '') + '</td>\
+                </tr>\
+                <tr>\
+                    <th scope="row">Esposizione</th>\
+                    <td>' + (feature.properties['Esposizione'] !== null ? feature.properties['Esposizione'] : '') + '</td>\
+                </tr>\
+            </table>'
+        )
     });
-
-    console.log(esposizione_attuale_layer);
 
     var base_scenario = L.layerGroup([
         ventoeonde_base_layer, alghefotofile_base_layer, alghesciafile_base_layer, caulerpa_base_layer,
         coralligeno_base_layer, cymodocea_base_layer, posidonia_base_layer, esposizione_attuale_layer
-    ]).addTo(map);
-    layerControl.addBaseLayer(base_scenario, "Base");
+    ]).addTo(map) // default layer group
+
+
+
+    // Create control to select layer group
+    var layerControl = L.control.layers({
+        "Base": base_scenario,
+    }, {
+        "Area Simulazione": areasimulazione_layer
+    }).addTo(map);
 
 
 }
