@@ -110,7 +110,7 @@ function exposition_layer(path) {
         pane: 'scenarios',
         pointToLayer: (feature, latlng) => {
             return L.circleMarker(latlng, {
-                radius: 6.5,
+                radius: radius_multiplier * 6.5,
                 opacity: 1,
                 color: 'rgba(35,35,35,1.0)',
                 weight: 1,
@@ -125,6 +125,8 @@ function exposition_layer(path) {
     });
 
 }
+
+var radius_multiplier = window.matchMedia("only screen and (max-width: 760px)").matches ? 1.5 : 1.0;
 
 function create_map() {
 
@@ -219,7 +221,7 @@ function create_map() {
         pane: 'scenarios',
         pointToLayer: (feature, latlng) => {
             return L.circleMarker(latlng, {
-                radius: 8.0,
+                radius: radius_multiplier * 8.0,
                 opacity: 1,
                 color: 'rgba(35,35,35,1.0)',
                 weight: 1,
@@ -292,7 +294,7 @@ function create_map() {
                 }
             }
             return L.circleMarker(latlng, {
-                radius: 4.0,
+                radius: radius_multiplier * 4.0,
                 opacity: 1,
                 color: 'rgba(35,35,35,1.0)',
                 weight: 1,
